@@ -27,7 +27,7 @@ def lookatcache(type,use_cache=True):
         os.path.exists(config.CACHE_NOCATEGORIES_TEST_X)
         )
         if cache_exists and use_cache:
-            print("Cargando datos (Caché 2) desde .parquet...")
+            print("Loading data (cache 2) from .parquet...")
             X_train = pd.read_parquet(config.CACHE_NOCATEGORIES_TRAIN_X)
             X_test = pd.read_parquet(config.CACHE_NOCATEGORIES_TEST_X)
             cache='True'

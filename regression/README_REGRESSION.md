@@ -1,8 +1,15 @@
-Comment utiliser le code pour entraîner les modèles qu'on a utilisé et générer des prédictions:
-Au début, il faut exécuter le fichier train.py, cela va entraîner les trois modèles de base qu'on a utilisé: catboostregressor, LGBMregressor et un kernel.
-Notre modèle final est un LGBMregressor qui prend comme inputs les prédictions des trois modèles de base. Pour entraîner ce modèle il faut exécuter le fichier train_stack.py.
-Finalement, pour générer les prédictions finales il faut exécuter le fichier predict_Stack.py
+# Challenge 2 — Spotify popularity (regression)
 
-Vous voyez qu'il y a un fichier nommé cache_functions.py, cela c'est parce que on garde les modèles qu'on entraîne en cache.
+Predict the Spotify popularity (0–100) of a track from its audio features and metadata.
+The solution is a **stacked ensemble**.
 
-Au début du fichier config.py il faut écrire où on a les fichiers de data du data challenge (en modifiant la variable DATA_DIR).
+## Pipeline
+
+1. `train.py` — trains the three base (L0) models: **CatBoostRegressor**, **LGBMRegressor**
+   and an **RBF-kernel approximation + LinearSVR**. Trained models are cached on disk.
+2. `train_stack.py` — trains the final (L1) meta-model, an **LGBMRegressor** that takes the
+   three base models' predictions as input.
+3. `predict_stack.py` — generates the final predictions and writes `submission.csv`.
+
+`cache_functions.py` caches the preprocessed data and models so reruns are fast. `config.py`
+defines global parameters; set `DATA_DIR` to the folder that contains the challenge data.

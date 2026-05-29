@@ -1,4 +1,4 @@
-# --- Fichero: train_meta_model.py ---
+# train_meta_model.py
 
 import numpy as np
 import joblib
@@ -6,41 +6,41 @@ import os
 from sklearn.linear_model import LogisticRegression
 
 # Importer nos configurations
-import c.config as config
+import config
 
 def train_l1_manager():
     """
-    Charge les méta-features (L1) et entraîne le gestionnaire final (L1).
+    Load the L1 meta-features and train the final L1 meta-model.
     """
-    print("--- Démarrage de l'entraînement du Gestionnaire L1 (Méta-Modèle)... ---")
+    print("--- Training the L1 meta-model... ---")
 
-    # --- 1. Charger les Méta-Features (Cache L1) ---
-    print("  Étape 1/3 : Chargement des méta-features (X_meta_train) et des cibles (y_full)...")
+    # --- 1. Load the meta-features (L1 cache) ---
+    print("  Step 1/3: loading meta-features (X_meta_train) and targets (y_full)...")
     try:
         X_meta_train = np.load(config.META_TRAIN_PATH)
         y_full = np.load(config.Y_FULL_PATH)
     except FileNotFoundError as e:
-        print(f"Erreur: Fichier de cache L1 non trouvé. {e}")
-        print("Veuillez d'abord exécuter 'train_base_models.py' pour générer les méta-features.")
+        print(f"Error: L1 cache file not found. {e}")
+        print("Run 'train_base_models.py' first to generate the meta-features.")
         return
 
-    print(f"  Méta-features chargées : X_meta_train shape = {X_meta_train.shape}")
-    print(f"  Cibles chargées : y_full shape = {y_full.shape}")
+    print(f"  Meta-features loaded: X_meta_train shape = {X_meta_train.shape}")
+    print(f"  Targets loaded: y_full shape = {y_full.shape}")
 
-    # --- 2. Définir le Gestionnaire L1 ---
-    print("  Étape 2/3 : Initialisation du gestionnaire L1 (LogisticRegression)...")
+    # --- 2. Define the L1 meta-model ---
+    print("  Step 2/3: initialising the L1 meta-model (LogisticRegression)...")
     final_estimator = LogisticRegression(**config.final_estimator_params)
 
-    # --- 3. Entraîner et Sauvegarder le Gestionnaire L1 ---
-    print("  Étape 3/3 : Entraînement et sauvegarde du méta-modèle...")
+    # --- 3. Train and save the L1 meta-model ---
+    print("  Step 3/3: training and saving the meta-model...")
     final_estimator.fit(X_meta_train, y_full)
     
-    # Sauvegarder le modèle final
+    # Save the final model
     os.makedirs(config.MODEL_DIR, exist_ok=True)
     joblib.dump(final_estimator, config.META_MODEL_PATH)
     
-    print("\n--- Entraînement L1 Terminé ---")
-    print(f"Le méta-modèle final (Gestionnaire L1) a été sauvegardé dans :")
+    print("\n--- L1 training done ---")
+    print(f"Final L1 meta-model saved to:")
     print(f"{config.META_MODEL_PATH}")
 
 if __name__ == "__main__":

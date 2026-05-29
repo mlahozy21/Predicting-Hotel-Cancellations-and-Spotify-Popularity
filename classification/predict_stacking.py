@@ -1,4 +1,4 @@
-# --- Fichero: predict_stacking.py ---
+# predict_stacking.py
 
 import pandas as pd
 import numpy as np
@@ -6,47 +6,47 @@ import joblib
 import os
 
 # Importer nos configurations
-import c.config as config
+import config
 
 def generate_stacking_submission():
     """
-    Charge le méta-modèle L1, les méta-features de test L1,
-    prédit les résultats finaux et crée le fichier de soumission.
+    Load the L1 meta-model and the L1 test meta-features, predict the final
+    results and write the submission file.
     """
-    print("--- Démarrage du processus de prédiction Stacking (L1)... ---")
+    print("--- Stacking prediction (L1)... ---")
 
-    # --- 1. Charger les composants requis ---
-    print("  Étape 1/4 : Chargement des composants (Méta-Modèle L1, Méta-Test, IDs, Encodeur)...")
+    # --- 1. Load the required components ---
+    print("  Step 1/4: loading components (L1 meta-model, test meta-features, IDs, encoder)...")
     try:
-        # Charger le gestionnaire L1 entraîné
+        # Load the trained L1 meta-model
         meta_model = joblib.load(config.META_MODEL_PATH)
         
-        # Charger les prédictions L0 sur les données de test (méta-features de test)
+        # Load the L0 predictions on the test set (test meta-features)
         X_meta_test = np.load(config.META_TEST_PATH)
         
-        # Charger l'encodeur de label (pour convertir 0,1,2 en 'Canceled', etc.)
+        # Load the label encoder (to map 0,1,2 back to the labels)
         le_y = joblib.load(config.LE_Y_PATH)
         
-        # Charger les IDs de test pour le fichier de soumission
+        # Load the test IDs for the submission file
         test_ids = joblib.load(config.TEST_IDS_PATH)
         
     except FileNotFoundError as e:
-        print(f"Erreur: Fichier modèle ou cache manquant. {e}")
-        print("Veuillez exécuter 'train_base_models.py' et 'train_meta_model.py' avant de prédire.")
+        print(f"Error: missing model or cache file. {e}")
+        print("Run 'train_base_models.py' and 'train_meta_model.py' before predicting.")
         return
     
-    print(f"  Composants chargés. X_meta_test shape = {X_meta_test.shape}")
+    print(f"  Components loaded. X_meta_test shape = {X_meta_test.shape}")
 
-    # --- 2. Générer les prédictions finales (encodées) ---
-    print("  Étape 2/4 : Génération des prédictions finales...")
+    # --- 2. Generate the final (encoded) predictions ---
+    print("  Step 2/4: generating the final predictions...")
     predictions_encoded = meta_model.predict(X_meta_test)
 
-    # --- 3. Décoder les prédictions ---
-    print("  Étape 3/4 : Décodage des labels (ex: 0 -> 'Canceled')...")
+    # --- 3. Decode the predictions ---
+    print("  Step 3/4: decoding the labels...")
     predictions_labels = le_y.inverse_transform(predictions_encoded)
 
-    # --- 4. Créer et sauvegarder le fichier de soumission ---
-    print(f"  Étape 4/4 : Création du fichier de soumission '{config.SUBMISSION_FILE}'...")
+    # --- 4. Build and save the submission file ---
+    print(f"  Step 4/4: writing the submission file '{config.SUBMISSION_FILE}'...")
     submission_df = pd.DataFrame({
         'row_id': test_ids, 
         'reservation_status': predictions_labels
@@ -54,8 +54,8 @@ def generate_stacking_submission():
     
     submission_df.to_csv(config.SUBMISSION_FILE, index=False)
 
-    print("\n--- Processus de Prédiction Terminé ---")
-    print(f"Le fichier de soumission a été sauvegardé avec succès : {config.SUBMISSION_FILE}")
+    print("\n--- Prediction done ---")
+    print(f"Submission written successfully: {config.SUBMISSION_FILE}")
 
 if __name__ == "__main__":
     generate_stacking_submission()

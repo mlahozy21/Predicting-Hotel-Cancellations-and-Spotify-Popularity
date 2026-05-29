@@ -1,159 +1,92 @@
-# Data Challenge - Apprentissage Supervisé 
+# Data Challenges — Advanced Supervised Learning
 
-Projet réalisé dans le cadre du cours **Apprentissage Supervisé Avancé** du Master M2 Mathématiques et Intelligence Artificielle à l'Université Paris-Saclay (2025).
+Two end-to-end machine-learning competitions solved with **stacked ensembles**, from the
+*Advanced Supervised Learning* course (M2 Mathematics & AI, Université Paris-Saclay, 2025).
 
-## Table des matières
+| Challenge | Task | Target | Models (base → meta) |
+|-----------|------|--------|----------------------|
+| **Hotel bookings** (`classification/`) | Multiclass classification | Reservation status: check-out / cancel / no-show | RandomForest + LightGBM + CatBoost → Logistic Regression |
+| **Spotify popularity** (`regression/`) | Regression | Track popularity (0–100) | LightGBM + CatBoost + RBF-kernel SVR → LightGBM |
 
-- [Challenge 1 : Classification des réservations hôtelières](#challenge-1--classification-des-réservations-hôtelières)
-- [Challenge 2 : Régression de la popularité Spotify](#challenge-2--régression-de-la-popularité-spotify)
-- [Installation](#installation)
-- [Utilisation](#utilisation)
-- [Structure du projet](#structure-du-projet)
-- [Auteurs](#auteurs)
+Both use **stacking**: several diverse base models (L0) are trained with out-of-fold
+predictions, and a meta-model (L1) learns to combine them.
 
-## Challenge 1 : Classification des réservations hôtelières
+## Challenge 1 — Hotel booking status (classification)
 
-Dans le secteur hôtelier, les annulations et les no-show entraînent des pertes financières importantes. L'objectif est de prédire le statut final d'une réservation parmi 3 catégories :
+Cancellations and no-shows cause large losses in the hotel industry. The goal is to predict
+the final status of a reservation among three classes: **check-out**, **cancel**, **no-show**.
+Three complementary base learners are trained, each on its own preprocessing pipeline
+(one-hot + scaling for RF, label-encoding + cyclical calendar features for LGBM, interaction
+features for CatBoost), and stacked with a logistic-regression meta-model.
 
-- **0** : Check-out (client s'est présenté)
-- **1** : Cancel (réservation annulée)
-- **2** : No-Show (client ne s'est pas présenté)
+## Challenge 2 — Spotify popularity (regression)
 
-
-## Challenge 2 : Régression de la popularité Spotify
-
-L'industrie musicale cherche à comprendre les facteurs de popularité d'un titre. L'objectif est de prédire la popularité Spotify (0-100) à partir des caractéristiques audio et métadonnées.
+The goal is to predict a track's Spotify popularity (0–100) from its audio features and
+metadata. Engineered audio features (e.g. party/calm/feel-good scores) feed LightGBM, CatBoost
+and an RBF-kernel SVR, combined by a LightGBM meta-model.
 
 ## Installation
 
-### Prérequis
-
-- Python 3.8+
-- pip ou conda
-
-### Installation des dépendances
-
 ```bash
-# Cloner le dépôt
 git clone https://github.com/mlahozy21/DATA-CHALLENGE-APPRENTISSAGE-SUPERVIS-.git
 cd DATA-CHALLENGE-APPRENTISSAGE-SUPERVIS-
-
-# Installer les dépendances
 pip install -r requirements.txt
 ```
 
-### Dépendances principales
+Place the challenge data under `classification/data/` and `regression/data/` (not versioned),
+then set `DATA_DIR` in the corresponding `config.py` if needed.
 
-```
-numpy>=1.21.0
-pandas>=1.3.0
-scikit-learn>=1.0.0
-lightgbm>=3.3.0
-catboost>=1.0.0
-joblib>=1.1.0
-```
+## Usage
 
-## Utilisation
-
-### Challenge 1 : Classification
+Run each challenge from its own folder.
 
 ```bash
-cd classification/
+# Challenge 1 — classification
+cd classification
+python train_base_models.py     # train the L0 base models (OOF)
+python train_meta_model.py      # train the L1 meta-model
+python predict_stacking.py      # write submission
 
-# 1. Entraîner les modèles de base (L0)
-python train_base_models.py
-
-# 2. Entraîner le méta-modèle (L1)
-python train_meta_model.py
-
-# 3. Générer les prédictions finales
-python predict_stacking.py
+# Challenge 2 — regression
+cd regression
+python train.py                 # train the L0 base models
+python train_stack.py           # train the L1 meta-model
+python predict_stack.py         # write submission
 ```
 
-**Sortie** : `submission.csv` contenant les prédictions pour l'ensemble de test
+Hyperparameters and paths live in each `config.py`.
 
-### Challenge 2 : Régression
-
-```bash
-cd regression/
-
-# 1. Entraîner les modèles de base (L0)
-python train.py
-
-# 2. Entraîner le méta-modèle (L1)
-python train_stack.py
-
-# 3. Générer les prédictions finales
-python predict_stack.py
-```
-
-**Sortie** : `submission.csv` contenant les prédictions de popularité
-
-### Configuration personnalisée
-
-Les hyperparamètres et chemins peuvent être modifiés dans `config.py` :
-
-```python
-# Exemple : modifier le learning rate de LightGBM
-LGBM_PARAMS = {
-    'learning_rate': 0.01,  # Modifier ici
-    'n_estimators': 3000,
-    'num_leaves': 35,
-    # ...
-}
-```
-## Structure du projet 
+## Project structure
 
 ```
-DATA-CHALLENGE-APPRENTISSAGE-SUPERVIS-/
-│
+.
+├── README.md  LICENSE  requirements.txt  .gitignore
 ├── classification/
-│   ├── data/                      # Données d'entraînement et test (non inclus dans git)
-│   ├── models/                    # Modèles entraînés (créé automatiquement)
-│   ├── processed/                 # Données pré-traitées (créé automatiquement)
-│   ├── README_CLASSIFICATION.md   # Documentation spécifique au challenge
-│   ├── train_base_models.py      # Entraînement des modèles L0
-│   ├── train_meta_model.py       # Entraînement du méta-modèle L1
-│   ├── predict_stacking.py       # Génération des prédictions finales
-│   ├── data_loader.py            # Chargement et nettoyage des données
-│   ├── feature_engineering.py    # Création de features
-│   └── config.py                 # Configuration et hyperparamètres
-│
-├── regression/
-│   ├── data/                      # Données d'entraînement et test (non inclus dans git)
-│   ├── modelsregression/          # Modèles entraînés (créé automatiquement)
-│   ├── processedregression/       # Données pré-traitées (créé automatiquement)
-│   ├── README_REGRESSION.md       # Documentation spécifique au challenge
-│   ├── train.py                   # Entraînement des modèles L0
-│   ├── train_stack.py             # Entraînement du méta-modèle L1
-│   ├── predict_stack.py           # Génération des prédictions finales
-│   ├── load_data.py               # Chargement des données
-│   ├── models.py                  # Définitions des modèles
-│   ├── funciones.py               # Fonctions utilitaires
-│   ├── cache_functions.py         # Gestion du cache
-│   └── config.py                  # Configuration et hyperparamètres
-└── README.md
+│   ├── config.py                # paths and hyperparameters
+│   ├── data_loader.py           # loading, cleaning, per-model preprocessing
+│   ├── feature_engineering.py   # base, cyclical and interaction features
+│   ├── train_base_models.py     # L0 training (out-of-fold)
+│   ├── train_meta_model.py      # L1 meta-model
+│   ├── predict_stacking.py      # final predictions / submission
+│   └── README_CLASSIFICATION.md
+└── regression/
+    ├── config.py                # paths and hyperparameters
+    ├── load_data.py             # data loading + caching
+    ├── features.py              # feature engineering, preprocessing, clustering
+    ├── models.py                # base-model definitions and training
+    ├── cache_functions.py       # parquet cache helpers
+    ├── train.py                 # L0 training
+    ├── train_stack.py           # L1 meta-model
+    ├── predict_stack.py         # final predictions / submission
+    └── README_REGRESSION.md
 ```
 
-## Auteurs
-
-**Master 2 Mathématiques et Intelligence Artificielle - Université Paris-Saclay**
-
-- **Marcos Lahoz**
-- **Judith Le Roy**
-- **Bingjian Jiang**
-
-**Cours** : Apprentissage Supervisé et Data Challenge  
-**Date** : Novembre 2025
-
-## Références
+## References
 
 - Ke et al. (2017). *LightGBM: A Highly Efficient Gradient Boosting Decision Tree*. NeurIPS.
 - Prokhorenkova et al. (2018). *CatBoost: unbiased boosting with categorical features*. NeurIPS.
-- Wolpert (1992). *Stacked Generalization*. Neural Networks, 5(2):241-259.
+- Wolpert (1992). *Stacked Generalization*. Neural Networks, 5(2):241–259.
 
 ## License
 
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
----
+Released under the MIT License — see `LICENSE`.

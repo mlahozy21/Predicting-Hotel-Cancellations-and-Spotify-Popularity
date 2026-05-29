@@ -11,10 +11,10 @@ import os
 import pandas as pd
 
 
-#LIGHTBGM INICIAL PARA ENCONTRAR HIPERPARAMETROS Y LUEGO LGBM FINAL
+# Initial LightGBM to find the best n_estimators, then the final LightGBM
 def find_optimal_estimators_lgbm(X_train, y_train, X_test, y_test):
-    """Usa early stopping para encontrar el n_estimators óptimo para LGBM."""
-    print("Buscando n_estimators óptimo para LightGBM...")
+    """Use early stopping to find the optimal n_estimators for LightGBM."""
+    print("Searching for the optimal n_estimators for LightGBM...")
     
     eval_model = LGBMRegressor(**config.LGBM_EVAL_PARAMS)
     
@@ -30,19 +30,19 @@ def find_optimal_estimators_lgbm(X_train, y_train, X_test, y_test):
     if optimal_n is None or optimal_n < 50:
         optimal_n = 50 
         
-    print(f"Número óptimo de estimadores LGBM encontrado: {optimal_n}")
+    print(f"Optimal LGBM n_estimators: {optimal_n}")
     
     y_pred = eval_model.predict(X_test)
     r2 = r2_score(y_test, y_pred)
     mse = mean_squared_error(y_test, y_pred)
-    print(f"LGBM (Evaluación) R2: {r2:.4f} | MSE: {mse:.4f}")
+    print(f"LGBM (eval) R2: {r2:.4f} | MSE: {mse:.4f}")
     os.makedirs(config.MODEL_DIR, exist_ok=True)
     joblib.dump(eval_model, config.LGBMinicial_MODEL_PATH)
     return optimal_n
 
 def train_final_lgbm(X_full, y_full, optimal_n_estimators):
-    """Entrena el modelo LGBM final con todos los datos y lo guarda."""
-    print("Entrenando modelo LGBM final...")
+    """Train the final LGBM on all the data and save it."""
+    print("Training the final LGBM...")
 
     final_params = config.LGBM_FINAL_PARAMS.copy()
     final_params['n_estimators'] = optimal_n_estimators
@@ -55,19 +55,19 @@ def train_final_lgbm(X_full, y_full, optimal_n_estimators):
         categorical_feature=config.CAT_VARIABLES
     )
     
-    print("Modelo final LGBM entrenado.")
+    print("Final LGBM trained.")
     
     os.makedirs(config.MODEL_DIR, exist_ok=True)
     joblib.dump(lgbm_model, config.LGBM_MODEL_PATH)
-    print(f"Modelo guardado en: {config.LGBM_MODEL_PATH}")
+    print(f"Model saved to: {config.LGBM_MODEL_PATH}")
 
     return lgbm_model
 
-#CATBOOST INICIAL PARA ENCONTRAR HIPERPARAMETROS Y LUEGO CATBOOST FINAL
+# Initial CatBoost to find the best iterations, then the final CatBoost
 
 def find_optimal_iterations_catboost(X_train, y_train, X_test, y_test):
-    """Usa early stopping para encontrar las iteraciones óptimas para CatBoost."""
-    print("Buscando iteraciones óptimas para CatBoost...")
+    """Use early stopping to find the optimal number of iterations for CatBoost."""
+    print("Searching for the optimal number of iterations for CatBoost...")
     
     cat_model_eval = CatBoostRegressor(**config.CATBOOST_PARAMS)
     
@@ -83,19 +83,19 @@ def find_optimal_iterations_catboost(X_train, y_train, X_test, y_test):
     if optimal_n is None or optimal_n < 50:
         optimal_n = 50
         
-    print(f"Número óptimo de iteraciones CatBoost encontrado: {optimal_n}")
+    print(f"Optimal CatBoost iterations: {optimal_n}")
     
     y_pred = cat_model_eval.predict(X_test)
     r2 = r2_score(y_test, y_pred)
     mse = mean_squared_error(y_test, y_pred)
-    print(f"CatBoost (Evaluación) R2: {r2:.4f} | MSE: {mse:.4f}")
+    print(f"CatBoost (eval) R2: {r2:.4f} | MSE: {mse:.4f}")
     os.makedirs(config.MODEL_DIR, exist_ok=True)
     joblib.dump(cat_model_eval, config.CATBOOSTinicial_MODEL_PATH)
     return optimal_n
 
 def train_final_catboost(X_full, y_full, optimal_n_iterations):
-    """Entrena el modelo CatBoost final con todos los datos y lo guarda."""
-    print("Entrenando modelo CatBoost final...")
+    """Train the final CatBoost on all the data and save it."""
+    print("Training the final CatBoost...")
 
     final_params = config.CATBOOST_PARAMS.copy()
     final_params['iterations'] = optimal_n_iterations
@@ -110,11 +110,11 @@ def train_final_catboost(X_full, y_full, optimal_n_iterations):
         cat_features=config.CAT_VARIABLES
     )
     
-    print("Modelo final CatBoost entrenado.")
+    print("Final CatBoost trained.")
     
     os.makedirs(config.MODEL_DIR, exist_ok=True)
     joblib.dump(cat_model_final, config.CATBOOST_MODEL_PATH)
-    print(f"Modelo guardado en: {config.CATBOOST_MODEL_PATH}")
+    print(f"Model saved to: {config.CATBOOST_MODEL_PATH}")
 
     return cat_model_final
 
@@ -123,41 +123,40 @@ def train_final_catboost(X_full, y_full, optimal_n_iterations):
 def train_kernel(X_train, y_train, X_test, y_test, gamma: float = 1.0):
 
     """
-    Aplica una aproximación de kernel RBF (Gaussiano) seguida de un Linear SVC para una clasificación rápida.
+    Apply an RBF (Gaussian) kernel approximation followed by a LinearSVR.
 
     Args:
-        X_train, X_test, y_train, y_test: Conjuntos de datos.
-        gamma (float): Parámetro del kernel RBF.
+        X_train, X_test, y_train, y_test: datasets.
+        gamma (float): RBF kernel parameter.
     """
     
-    print("Iniciando clasificación con Aproximación de Kernel Gaussiano (RBFSampler)...")
+    print("Training RBF kernel approximation + LinearSVR (regression)...")
 
-    # 1. Crear el pipeline: Escalado -> Aproximación RBF -> Clasificador Lineal
+    # 1. Pipeline: RBF approximation -> linear regressor
     rbf_feature = RBFSampler(gamma='scale', random_state=config.RANDOM_STATE, n_components=2000)
     
-    # LinearSVC es una de las opciones más rápidas para clasificación lineal a gran escala.
+    # LinearSVR is a fast large-scale linear regressor.
     linear_svm = LinearSVR(random_state=config.RANDOM_STATE)
 
-    # Nota: Si el problema es multiclase, asegúrate de que LinearSVC lo maneje correctamente (por defecto es One-vs-Rest).
+
     
-    pipeline = Pipeline([       # Normalización es crucial para métodos basados en distancia
-        ('rbf_sampler', rbf_feature),      # Aproximación del kernel
-        ('linear_svc', linear_svm)         # Clasificador lineal rápido
+    pipeline = Pipeline([
+        ('rbf_sampler', rbf_feature),      # kernel approximation
+        ('linear_svc', linear_svm)         # fast linear model
     ])
 
-    # 2. Entrenamiento
+    # 2. Training
     pipeline.fit(X_train, y_train)
 
-    # 3. Predicción
+    # 3. Prediction
     y_pred = pipeline.predict(X_test)
 
-    # 4. Evaluación (usando F1-Score ponderado para multiclase)
+    # 4. Evaluation (R2)
     r2 = r2_score(y_test, y_pred)
     
-    print(f"\nResultados de la Clasificación (RBF Sampler + Linear SVC):")
-    print(f"F1-Score (weighted): {r2:.4f}")
+    print(f"Kernel model (RBFSampler + LinearSVR) R2: {r2:.4f}")
     os.makedirs(config.MODEL_DIR, exist_ok=True)
     joblib.dump(pipeline, config.KERNEL_MODEL_PATH)
-    print(f"Modelo guardado en: {config.KERNEL_MODEL_PATH}")
+    print(f"Model saved to: {config.KERNEL_MODEL_PATH}")
     
     return pipeline

@@ -1,11 +1,11 @@
-#DIRECTORIES FOR USING THE DATASETS
+# Dataset paths
 DATA_DIR="data/" 
 TRAIN_DATA=DATA_DIR+"train_data.csv"
 TEST_DATA=DATA_DIR+"test_data.csv"
 SUBMISSION_TEMPLATE=DATA_DIR+"naive_submission.csv"
-SUBMISSION_PATH = "submission.csv" # <-- Archivo de salida
+SUBMISSION_PATH = "submission.csv"  # output file
 
-#VARIABLES FOR PREPROCESSING
+# Preprocessing settings
 DROP_COLS=['row_id']
 CAT_VARIABLES=['track_genre','time_signature', 'key']
 VARIABLE_TO_PREDICT="popularity"
@@ -13,7 +13,7 @@ RANDOM_STATE=65
 TEST_SPLIT_SIZE=0.3
 N_CLUSTERS=0
 
-#CACHE PREPROCESSING
+# Preprocessing cache
 PROCESSED_DIR="processedregression/"
 CACHE_TRAIN_X=PROCESSED_DIR+"train_X.parquet"
 CACHE_TRAIN_Y=PROCESSED_DIR+"train_Y.parquet"
@@ -21,7 +21,7 @@ CACHE_TEST_X=PROCESSED_DIR+"test_X.parquet"
 CACHE_TEST_Y=PROCESSED_DIR+"test_Y.parquet"
 CACHE_NOCATEGORIES_TRAIN_X=PROCESSED_DIR+"train_nocategories_X.parquet"
 CACHE_NOCATEGORIES_TEST_X=PROCESSED_DIR+"test_nocategories_X.parquet"
-#CACHE MODELS
+# Model cache
 MODEL_DIR = "modelsregression/"
 LGBM_MODEL_PATH = MODEL_DIR + "lgbm_model.joblib"
 CATBOOST_MODEL_PATH = MODEL_DIR + "catboost_model.joblib"
@@ -29,9 +29,9 @@ LGBMinicial_MODEL_PATH = MODEL_DIR + "lgbminicial_model.joblib"
 CATBOOSTinicial_MODEL_PATH = MODEL_DIR + "catboostinicial_model.joblib"
 KERNEL_MODEL_PATH = MODEL_DIR + "kernel_model.joblib"
 META_MODEL_PATH=MODEL_DIR + "meta_model.joblib"
-PROCESSOR_PATH = MODEL_DIR + "processor.joblib" # <-- ¡NUEVO Y MUY IMPORTANTE!
+PROCESSOR_PATH = MODEL_DIR + "processor.joblib"
 
-#HYPERPARAMETERS MODELS
+# Model hyperparameters
 LGBM_EVAL_PARAMS= {
     'objective': 'regression',
     'n_estimators': 30000,

@@ -2,16 +2,16 @@ import pandas as pd
 import os
 import config
 from sklearn.model_selection import train_test_split
-import funciones as f
+import features as f
 import cache_functions as cf
 import joblib
 
 def load_train_data(use_cache=True):
-    #TRY TO USE CACHE
+    # Try the cache first
     X_train, X_test, y_train, y_test, cache= cf.lookatcache(type='train_data')
     if cache=='True':
         return X_train, X_test, y_train, y_test
-    #IF WE DON'T FIND CACHE
+    # No cache: build from scratch
     df=pd.read_csv(config.TRAIN_DATA)
     df=f.transformationscat(df)
     X=df.drop(columns=[config.VARIABLE_TO_PREDICT])
@@ -30,7 +30,7 @@ def load_train_data(use_cache=True):
     return X_train, X_test, y_train, y_test
 
 def load_test_data():
-    #WE APPLY THE SAME TRANSFORMATION TO THE TEST FILE
+    # Apply the same transformation to the test file
     dftest = pd.read_csv(config.TEST_DATA)
     row_ids = dftest['row_id'] 
     dftest=f.transformationscat(dftest)
@@ -38,7 +38,7 @@ def load_test_data():
 
 def load_train_data_nocategories(use_cache=True):
     os.makedirs(config.PROCESSED_DIR, exist_ok=True)
-    # Comprobar si el caché de sklearn existe
+    # Check whether the cache exists
     X_train, X_test, cache= cf.lookatcache(type='train_data_nocategories')
     if cache=='True':
         return X_train, X_test

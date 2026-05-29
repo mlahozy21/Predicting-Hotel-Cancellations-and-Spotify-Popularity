@@ -1,4 +1,4 @@
-# --- Fichero: config.py ---
+# config.py
 
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -7,35 +7,35 @@ import lightgbm as lgb
 from catboost import CatBoostClassifier
 from sklearn.linear_model import LogisticRegression
 
-# --- Constantes Globales ---
+# Global constants
 RANDOM_STATE = 42
-N_SPLITS = 5 # Nombre de plis pour le Stacking OOF
+N_SPLITS = 5  # number of folds for OOF stacking
 
-# --- Chemins des Données ---
-# Modifie DATA_DIR pour qu'il pointe vers le bon dossier
-# (ex: "../data/" si les données sont un niveau au-dessus)
+# Data paths
+# Set DATA_DIR to the folder that holds the challenge data
+# (e.g. "../data/" if the data is one level up)
 DATA_DIR = "data/" 
 TRAIN_FILE = DATA_DIR + "train_data2.csv"
 TEST_FILE = DATA_DIR + "test_data2.csv"
 SUBMISSION_FILE = DATA_DIR + "submission2.csv"
 
-# --- Chemins des Modèles et Objets ---
-# Répertoire pour sauvegarder les modèles
+# Model and object paths
+# Directory to store the models
 MODEL_DIR = "models_stacking/"
 
-# Modèles de base (L0)
+# Base models (L0)
 RF_MODEL_PATH = MODEL_DIR + "stack_rf_base.joblib"
 LGBM_MODEL_PATH = MODEL_DIR + "stack_lgbm_base.joblib"
 CAT_MODEL_PATH = MODEL_DIR + "stack_cat_base.joblib"
 
-# Modèle final (L1)
+# Final model (L1)
 META_MODEL_PATH = MODEL_DIR + "stack_meta_model.joblib"
 
-# Processeurs et Encoders
+# Preprocessors and encoders
 PREPROCESSOR_A_PATH = MODEL_DIR + "stack_preprocessor_A_rf.joblib"
 LE_Y_PATH = MODEL_DIR + "stack_label_encoder_y.joblib"
 
-# Méta-features (Cache)
+# Meta-features (cache)
 CACHE_DIR = "cache_stacking/"
 META_TRAIN_PATH = CACHE_DIR + "meta_train.npy"
 META_TEST_PATH = CACHE_DIR + "meta_test.npy"
@@ -43,9 +43,9 @@ Y_FULL_PATH = CACHE_DIR + "y_full.npy"
 TEST_IDS_PATH = CACHE_DIR + "test_ids.joblib"
 
 
-# --- Définition des Paramètres des Modèles ---
+# Model hyperparameters
 
-# 1. Paramètres RF (pour Pipeline)
+# 1. RandomForest params (pipeline)
 rf_params = {
     'n_estimators': 400, 
     'random_state': RANDOM_STATE, 
@@ -53,7 +53,7 @@ rf_params = {
     'n_jobs': -1
 }
 
-# 2. Paramètres LGBM (King)
+# 2. LightGBM params
 lgbm_king_params = {
     'n_estimators': 3000, 
     'learning_rate': 0.03, 
@@ -67,10 +67,10 @@ lgbm_king_params = {
     'random_state': RANDOM_STATE, 
     'n_jobs': -1
 }
-# Callbacks pour LGBM
+# LGBM callbacks
 lgbm_callbacks = [lgb.early_stopping(100, verbose=False)]
 
-# 3. Paramètres CatBoost (Challenger)
+# 3. CatBoost params
 cat_class_weights = [1.0, 1.0, 0.7]
 catboost_challenger_params = {
     'loss_function': 'MultiClassOneVsAll', 
@@ -92,7 +92,7 @@ catboost_challenger_params = {
     'verbose': False,
 }
 
-# 4. Paramètres Gestionnaire L1 (Meta-Modèle)
+# 4. L1 meta-model params
 final_estimator_params = {
     'max_iter': 1000, 
     'random_state': RANDOM_STATE

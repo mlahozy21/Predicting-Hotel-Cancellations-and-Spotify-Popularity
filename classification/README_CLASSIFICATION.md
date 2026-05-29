@@ -1,4 +1,17 @@
-Au début, il faut exécuter le fichier train_base_models.py, qui entraîne les trois modèles de base utilisés : RandomForestClassifier, LGBMClassifier et CatBoostClassifier. Notre modèle final est une LogisticRegression (classificateur linéaire), qui prend comme entrées les prédictions des trois modèles de base. Pour entraîner ce modèle de niveau supérieur (L1), il faut exécuter le fichier train_meta_model.py. Enfin, pour générer les prédictions finales, il suffit d’exécuter predict_stacking.py, ce qui produira un fichier submission.csv contenant les résultats finaux. Les fichiers data_loader.py et feature_engineering.py contiennent respectivement les fonctions de chargement et de transformation des données, tandis que config.py définit les paramètres globaux du projet (chemins, hyperparamètres, etc.).
+# Challenge 1 — Hotel booking status (classification)
 
-Au début du fichier config.py il faut écrire où on a les fichiers de data du data challenge 
-(en modifiant la variable DATA_DIR).
+Predict the final status of a hotel reservation among three classes: **check-out** (0),
+**cancel** (1), **no-show** (2). The solution is a **stacked ensemble**.
+
+## Pipeline
+
+1. `train_base_models.py` — trains the three base (L0) models with an out-of-fold (OOF)
+   scheme: **RandomForest**, **LGBMClassifier** and **CatBoostClassifier**. Each model has its
+   own preprocessing (see `data_loader.py` / `feature_engineering.py`) and produces OOF
+   predictions used as meta-features.
+2. `train_meta_model.py` — trains the final (L1) meta-model, a **Logistic Regression** that
+   takes the three base models' predictions as input.
+3. `predict_stacking.py` — generates the final predictions and writes `submission`.
+
+`config.py` defines global parameters (paths, hyperparameters). Set `DATA_DIR` to the folder
+that contains the challenge data before running.
