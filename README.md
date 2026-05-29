@@ -28,8 +28,8 @@ and an RBF-kernel SVR, combined by a LightGBM meta-model.
 ## Installation
 
 ```bash
-git clone https://github.com/mlahozy21/DATA-CHALLENGE-APPRENTISSAGE-SUPERVIS-.git
-cd DATA-CHALLENGE-APPRENTISSAGE-SUPERVIS-
+git clone https://github.com/mlahozy21/Predicting-Hotel-Cancellations-and-Spotify-Popularity.git
+cd Predicting-Hotel-Cancellations-and-Spotify-Popularity
 pip install -r requirements.txt
 ```
 
